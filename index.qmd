@@ -17,3 +17,4 @@ This website will contain my mini-projects and course work throughout the semest
 
 ---
 
+Last Updated: `r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`
