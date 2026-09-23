@@ -1,0 +1,19 @@
+---
+title: "About Me"
+---
+
+# Hello!
+
+My name is Damir Stepanovic, and I am a Master's student at Baruch College.
+
+I am currently taking **STA 9750**, where I am learning data science, statistics, programming, and data visualization.
+
+This website will contain my mini-projects and course work throughout the semester.
+
+```{r}
+#| include: false
+1+1
+```
+
+---
+
