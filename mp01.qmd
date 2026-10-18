@@ -1042,8 +1042,8 @@ Overall, Netflix should pursue a balanced strategy that combines major releases 
 ::: {.callout-note title="AI Usage Statement" collapse="true"}
 
 - ChatGPT: Created the original code template.
-- Claude (code review): Found errors in the code,
-- Claude (code writing): Helped revise the R code
+- Claude (code review): Found errors in the code.
+- Claude (code writing): Helped revise the R code.
 
 :::
 
