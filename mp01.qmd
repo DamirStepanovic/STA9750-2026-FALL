@@ -10,7 +10,7 @@ format:
     code-fold: show
     code-tools: true
     code-overflow: wrap
-    embed-resources: true
+    embed-resources: false
 execute:
   echo: true
   warning: false
