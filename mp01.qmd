@@ -1,5 +1,1054 @@
 ---
-title: "Mini-Project Placeholder"
+title: "STA 9750 Mini-Project #01"
+subtitle: "What We Watched: Exploring Netflix Viewing Data"
+author: "Damir Stepanovic"
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: show
+    code-tools: true
+    code-overflow: wrap
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
 ---
 
-This is a placeholder for STA9750 Mini-Project 1. Check back soon for more!
+
+```{=html}
+<style>
+:root {
+  color-scheme: light;
+  --ink: #28313a;
+  --muted: #5d6873;
+  --border: #dfe3e7;
+  --background: #f5f6f7;
+  --accent: #ad4850;
+  --accent-hover: #872f38;
+}
+html { scroll-behavior: smooth; }
+body {
+  color: var(--ink) !important;
+  background: var(--background) !important;
+  line-height: 1.72;
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+}
+/* Remove earlier margin watermark, if any. */
+body::before { content: none !important; }
+
+/* White report surface; content remains fully readable. */
+main.content {
+  position: relative;
+  isolation: isolate;
+  background: #ffffff !important;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: clamp(22px, 3vw, 48px);
+  box-shadow: 0 12px 30px rgba(32,42,50,.065);
+}
+/* Small Netflix-red N badge, pinned to the left edge while scrolling. */
+body::after {
+  content: "";
+  position: fixed;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  width: 62px;
+  height: 82px;
+  border-radius: 14px;
+  border: 1px solid rgba(138, 146, 157, .25);
+  background-color: rgba(255,255,255,.96);
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MiA5MCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJOZXRmbGl4IE4iPjxwYXRoIGZpbGw9IiNCMTA2MEUiIGQ9Ik05IDZoMTV2NzhIOXoiLz48cGF0aCBmaWxsPSIjQjEwNjBFIiBkPSJNNDggNmgxNXY3OEg0OHoiLz48cGF0aCBmaWxsPSIjRTUwOTE0IiBkPSJNMjQgNmgxNWwyNCA3OEg0OHoiLz48L3N2Zz4=");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 47px 65px;
+  box-shadow: 0 5px 18px rgba(38, 48, 58, .14);
+  pointer-events: none;
+  user-select: none;
+  z-index: 1000;
+}
+/* Keep headings, paragraphs, figures, tables, and code ABOVE watermark. */
+main.content > * { position: relative; z-index: 1; }
+
+#title-block-header {
+  padding: 24px 28px;
+  border: 1px solid #e5e7ea;
+  border-left: 5px solid var(--accent);
+  border-radius: 11px;
+  background: #fafafa;
+}
+#title-block-header .title { color: #252c32 !important; }
+#title-block-header .subtitle { color: #5a6570 !important; }
+h1 { color: #303940; border-bottom: 1px solid #e0e4e8; padding-bottom: .45rem; }
+h2 { color: #3c4a55; }
+h3 { color: #505c66; }
+p { max-width: 85ch; }
+a { color: #87505a; }
+a:hover { color: var(--accent-hover); }
+#quarto-margin-sidebar nav, #TOC {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+#quarto-margin-sidebar a.active, #TOC a.active { color: var(--accent) !important; }
+.gt_table {
+  border: 1px solid #e0e5e9;
+  border-radius: 9px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(40,50,60,.05);
+}
+.gt_table tr:hover td { background: #f4f6f8 !important; }
+.cell-output-display { max-width: 100%; overflow-x: auto; }
+.quarto-figure img { max-width: 100%; border-radius: 10px; background: white; }
+pre.sourceCode { background: #f7f8f9 !important; border: 1px solid #e1e4e8; border-radius: 8px; }
+.callout { border-radius: 10px; }
+@media (max-width: 700px) {
+  main.content { padding: 20px 16px; }
+  body::after { left: 5px; width: 43px; height: 59px; border-radius: 10px; background-size: 32px 45px; }
+  #title-block-header { padding: 20px; }
+}
+@media print {
+  body { background: white !important; }
+  body::after { display: none !important; }
+  main.content { box-shadow: none !important; border: none !important; padding: 0 !important; }
+}
+</style>
+```
+
+# Introduction
+
+Netflix publishes its **What We Watched reports** to provide greater transparency about how audiences engage with content on its streaming platform. These reports show the viewing performance of movies, television series, and other content, helping creators, investors, and industry analysts understand audience preferences and viewing trends. This analysis combines seven six-month reports, covering January 2023 through June 2026, to examine Netflix's content performance over time.
+The purpose of this report is to analyze Netflix's viewing data and provide strategic recommendations to Netflix leadership regarding content investment decisions and beyond. The analysis examines viewing patterns, catalog size, popular titles, international availability, and differences between content formats. These findings can help identify which types of content generate sustained engagement and where Netflix should prioritize its future investments.
+
+
+# Task 1: Acquire Netflix's seven reports
+
+
+The following code can be used to acquire data from Netflix’s corporate relations website. Specifically, once run, this code will download and aggregate the previous seven WWW reports. Netflix provides slightly different data from each report, so this function standardizes on a small set of key features including: the ‘watch window’, the title of the program, the runtime, the total hours viewed, the original release date of the program, whether the program is available in all countries in which Netflix is available, and whether the program is pre-recorded or live.
+
+To be efficient, this function will save a copy of the downloaded data in a folder called data/mp01 and use that copy to avoid re-downloading a file if it is already present on your computer. This will make your code faster to run and will avoid putting unnecessary stress on the Netflix servers.
+
+
+```{r}
+#| label: setup
+#| include: true
+# Run once in the R Console if any packages are missing:
+# install.packages(c("tidyverse", "rvest", "readxl", "fs", "gt",
+#                    "skimr", "scales", "stringi", "lubridate"))
+library(tidyverse)
+library(gt)
+library(skimr)
+library(scales)
+library(lubridate)  # make_date(), hm(), hour(), minute()
+options(scipen = 999)
+knitr::opts_chunk$set(fig.align = "center", dpi = 150, out.width = "100%")
+
+# Common accessible palette: blue, teal, and warm coral.
+plot_blue <- "#416f9b"
+plot_teal <- "#368b77"
+plot_coral <- "#c96c58"
+```
+
+
+
+```{r}
+#| label: acquire-netflix
+#' Acquire Netflix What We Watched Reports (instructor-provided code)
+#' 
+#' This function will acquire and standardize all data for MP#01
+#' from Netflix. Because Netflix hosts the data files behind a CDN, we
+#' are accessing the release pages and automatically extracting links to the
+#' relevant files (with CDN hash). 
+#' 
+#' After import, files are stacked vertically and some basic cleaning is
+#' performed. 
+load_netflix_data <- function(){
+  # Note to students: Make sure you have installed the tidyverse and fs packages
+  #                   before beginning this assignment. If you aren't sure,
+  #                   simply run `library(tidyverse)` at your R Console and, if
+  #                   you don't see an error message, `tidyverse` has been 
+  #                   installed. (Same for `fs`) If you still need to install
+  #                   either package, use the `install.packages` function as 
+  #                   demonstrated in class.
+  library(tidyverse)
+  library(rvest)
+  library(readxl)
+  library(fs)
+  
+  data_dir <- path("data", "mp01")
+    
+  if(!dir_exists(data_dir)){
+    dir_create(data_dir, showWarnings=FALSE, recurse=TRUE)
+  }
+  
+  NETFLIX_URLS <- list(
+    `2023H1` = "https://about.netflix.com/news/what-we-watched-a-netflix-engagement-report",
+    `2023H2` = "https://about.netflix.com/news/what-we-watched-the-second-half-of-2023",
+    `2024H1` = "https://about.netflix.com/news/what-we-watched-the-first-half-of-2024",
+    `2024H2` = "https://about.netflix.com/news/what-we-watched-the-second-half-of-2024",
+    `2025H1` = "https://about.netflix.com/news/what-we-watched-the-first-half-of-2025",
+    `2025H2` = "https://about.netflix.com/news/what-we-watched-the-second-half-of-2025",
+    `2026H1` = "https://about.netflix.com/news/what-we-watched-the-first-half-of-2026"
+  )
+  
+  download_if_needed <- function(url, local){
+    if(!file_exists(local)){
+      download.file(url, local, quiet = TRUE, mode = "wb")
+    }
+    
+    return(local)
+  }
+    
+  NETFLIX_URLS |> 
+    map(read_html) |> 
+    map(html_element, xpath = "//a[contains(@href, '.xlsx')]") |> 
+    map_chr(html_attr, "href") |> 
+    enframe("period", "url") |> 
+   mutate(path = path(data_dir, paste0(period, ".xlsx")), 
+          path = map2(url, path, download_if_needed), 
+          data = map(path, read_excel, skip=3, na="*"), 
+          data = map(data, \(x) x |> mutate(`Release Date` = as.Date(`Release Date`)))) |>
+    unnest(data) |> 
+    select(-url, -path) |> 
+    mutate(year=str_sub(period, 1, 4), 
+           half=str_sub(period, start=6), 
+           period_start = make_date(year, if_else(half==1, 1, 7), 1), 
+           period_end = make_date(year, if_else(half==1, 6, 12), if_else(half==1, 30, 31))) |> 
+    filter(!is.na(`Hours Viewed`)) |> 
+    mutate(live_event = !is.na(Runtime) & str_detect(Runtime, "\\d+:\\d+\\*"), 
+           clean_time = str_remove(Runtime, fixed("*")),
+           Runtime = 60 * hour(hm(clean_time)) + minute(hm(clean_time))) |>
+    select(-clean_time) |>
+    mutate(Runtime = coalesce(Runtime, mean(Runtime, na.rm=TRUE)), 
+           .by=Title, 
+           Title = stringi::stri_trans_general(Title, "Latin-ASCII"),
+           Title = str_remove(Title, " // .*"), 
+           Title = str_remove(Title, "[^[:ascii:]].*"), 
+           Title = str_trim(Title)) |>
+    filter_out(Title == "") |>
+    select(year, 
+           period, 
+           period_start, 
+           period_end, 
+           Title, 
+           -half, 
+           Runtime, 
+           Views, 
+           `Hours Viewed`, 
+           `Release Date`,
+           `Available Globally?`, 
+           live_event)
+}
+
+NETFLIX_DATA <- load_netflix_data()
+
+
+
+```
+
+# Tasks 2 and 3: Column names and types
+
+During data preparation, I combined seven Netflix viewing reports into one dataset and then cleaned the column names using `rename()` to make them consistent, lowercase, and easier to use in R. Next, I used `mutate()` to convert the year column into an integer and the global availability column into a logical variable. Finally, I checked the results to make sure the data types were correct and all seven reporting periods were present. 
+
+
+
+```{r}
+#| label: clean-netflix
+NETFLIX_DATA <- load_netflix_data() |>
+  # Task 2: tidy, lower-case, underscore-separated names
+  rename(
+    title              = Title,
+    runtime_minutes    = Runtime,
+    views              = Views,
+    hours_viewed       = `Hours Viewed`,
+    release_date       = `Release Date`,
+    available_globally = `Available Globally?`
+  ) |>
+  # Task 3: integer year and logical global availability
+  mutate(
+    year               = as.integer(year),
+    available_globally = available_globally == "Yes"
+  )
+
+stopifnot(
+  is.integer(NETFLIX_DATA$year),
+  is.logical(NETFLIX_DATA$available_globally),
+  n_distinct(NETFLIX_DATA$period) == 7L
+)
+
+# Title cleaning can merge two raw rows into one title within a period
+# For title-level analysis we aggregate to one row per title per period and add an implied-views
+# measure (hours / runtime in hours) wherever Netflix didn't publish Views.
+title_period <- NETFLIX_DATA |>
+  summarise(
+    hours_viewed       = sum(hours_viewed),
+    views              = if (all(is.na(views))) NA_real_ else sum(views, na.rm = TRUE),
+    runtime_minutes    = first(runtime_minutes, na_rm = TRUE),
+    release_date       = first(release_date, na_rm = TRUE),
+    available_globally = first(available_globally, na_rm = TRUE),
+    live_event         = any(live_event),
+    .by = c(year, period, period_start, period_end, title)
+  ) |>
+  mutate(
+    views_est = coalesce(
+      views,
+      if_else(!is.na(runtime_minutes) & runtime_minutes > 0,
+              hours_viewed / (runtime_minutes / 60), NA_real_)
+    )
+  )
+```
+
+# Task 4: Initial exploratory checks
+
+I performed exploratory data analysis (EDA) to better understand the Netflix dataset and identify possible issues before continuing with our analysis. First, I downloaded seven Netflix viewing reports and saved the files in the data/mp01/ folder to avoid downloading them repeatedly and standardized the title names and created a separate dataset called title_period to combine duplicate titles within the same reporting period. When possible, also filled in missing runtime information using other records of the same title. Next, I used `glimpse()` to examine the dataset's structure and check the column types, and `skim()` to review summary statistics and missing values. We also used `slice_sample()` to examine eight randomly selected rows. Additionally, created a histogram of viewing hours, a missing-data heatmap, and a data-quality table. Our analysis showed that a small number of titles received much higher viewing hours than most others and that the 2023H1 report contained substantial missing information. Because some runtime values were filled using other records. Overall, these steps helped us understand the dataset's structure, identify its limitations, and prepare for further analysis.
+
+
+
+```{r}
+#| label: eda-glimpse
+glimpse(NETFLIX_DATA)
+```
+
+```{r}
+#| label: eda-skim
+skim(NETFLIX_DATA)
+```
+
+```{r}
+#| label: eda-random-sample
+# A random sample is more likely to surface oddities than head().
+set.seed(9750)
+NETFLIX_DATA |>
+  slice_sample(n = 8) |>
+  select(period, title, runtime_minutes, hours_viewed, views,
+         release_date, available_globally, live_event) |>
+  gt() |>
+  opt_row_striping() |>
+  tab_options(table.font.size = gt::px(13), data_row.padding = gt::px(5)) |>
+  tab_header(title = "Random sample of eight rows") |>
+  cols_label(
+    period = "Period", title = "Title", runtime_minutes = "Runtime (min)",
+    hours_viewed = "Hours viewed", views = "Views",
+    release_date = "Release date", available_globally = "Global?",
+    live_event = "Live?"
+  ) |>
+  fmt_number(columns = c(runtime_minutes, hours_viewed, views), decimals = 0) |>
+  sub_missing(missing_text = "—")
+```
+
+```{r}
+#| label: eda-rows-by-period
+NETFLIX_DATA |>
+  summarise(
+    rows            = n(),
+    missing_runtime = mean(is.na(runtime_minutes)),
+    missing_views   = mean(is.na(views)),
+    missing_release = mean(is.na(release_date)),
+    .by = period
+  ) |>
+  arrange(period) |>
+  gt() |>
+  opt_row_striping() |>
+  tab_options(table.font.size = gt::px(13), data_row.padding = gt::px(5)) |>
+  tab_header(title = "Rows and missingness by report") |>
+  cols_label(
+    period = "Period", rows = "Rows", missing_runtime = "Runtime missing",
+    missing_views = "Views missing", missing_release = "Release date missing"
+  ) |>
+  fmt_number(columns = rows, decimals = 0) |>
+  fmt_percent(columns = starts_with("missing"), decimals = 1)
+```
+
+
+
+```{r}
+#| label: eda-quality-audit
+# Audit: do not silently discard impossible values or unexpected duplicates.
+quality_audit <- tibble::tibble(
+  Check = c("Original rows", "Unique title / period pairs", "Repeated cleaned title / period pairs",
+            "Missing runtime", "Missing release date", "Missing views",
+            "Nonpositive published hours", "Nonpositive known runtimes"),
+  Count = c(nrow(NETFLIX_DATA), nrow(title_period),
+            nrow(NETFLIX_DATA) - nrow(title_period),
+            sum(is.na(NETFLIX_DATA$runtime_minutes)),
+            sum(is.na(NETFLIX_DATA$release_date)),
+            sum(is.na(NETFLIX_DATA$views)),
+            sum(NETFLIX_DATA$hours_viewed <= 0, na.rm = TRUE),
+            sum(NETFLIX_DATA$runtime_minutes <= 0, na.rm = TRUE))
+)
+quality_audit |>
+  gt() |>
+  opt_row_striping() |>
+  tab_options(table.font.size = gt::px(13)) |>
+  tab_header(title = "Quality checks before analysis",
+             subtitle = "Counts from the combined original dataset") |>
+  fmt_number(columns = Count, decimals = 0)
+```
+
+```{r}
+#| label: eda-hours-distribution
+#| fig-width: 8
+#| fig-height: 4.8
+#| fig-cap: "Hours viewed are strongly right-skewed: most titles draw modest audiences, with a small high-performing tail. The horizontal axis is logarithmic."
+NETFLIX_DATA |>
+  filter(!is.na(hours_viewed), hours_viewed > 0) |>
+  ggplot(aes(x = hours_viewed / 1e6)) +
+  geom_histogram(bins = 42, fill = plot_blue, colour = "white", linewidth = .25) +
+  scale_x_log10(labels = scales::label_number(accuracy = .01)) +
+  scale_y_continuous(labels = scales::label_comma()) +
+  labs(title = "Most titles attract modest viewing hours",
+       subtitle = "Distribution across original report entries, 2023H1–2026H1",
+       x = "Hours viewed (millions, log scale)", y = "Number of entries",
+       caption = "Source: Netflix What We Watched reports; titles below the publication threshold are excluded") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(face = "bold"), panel.grid.minor = element_blank())
+```
+
+```{r}
+#| label: eda-missingness-heatmap
+#| fig-width: 8.5
+#| fig-height: 4.3
+#| fig-cap: "Missing runtime and views are concentrated in 2023H1, while release dates remain missing for about half of entries in most later periods."
+NETFLIX_DATA |>
+  summarise(
+    Runtime = mean(is.na(runtime_minutes)),
+    Views = mean(is.na(views)),
+    `Release date` = mean(is.na(release_date)),
+    .by = period
+  ) |>
+  pivot_longer(-period, names_to = "Field", values_to = "missing_share") |>
+  mutate(Field = factor(Field, levels = c("Release date", "Views", "Runtime"))) |>
+  ggplot(aes(period, Field, fill = missing_share)) +
+  geom_tile(colour = "white", linewidth = 1) +
+  geom_text(aes(label = scales::percent(missing_share, accuracy = .1)),
+            size = 3.25, colour = "#243341") +
+  scale_fill_gradient(low = "#e9f2f6", high = "#d88a71",
+                      labels = scales::label_percent(), limits = c(0, 1)) +
+  labs(title = "Metadata coverage varies by reporting period",
+       subtitle = "Share missing within each six-month report",
+       x = "Report", y = NULL, fill = "Missing", caption = "Source: Netflix What We Watched reports") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(face = "bold"),
+        panel.grid = element_blank(), legend.position = "bottom")
+```
+
+The combined dataset has **61,892 observations and 11 columns**. The data types are suitable for analysis: `year` is an integer; `period` and `title` are character variables; `period_start`, `period_end`, and `release_date` are dates; `available_globally` and `live_event` are logical variables; and `runtime_minutes`, `views`, and `hours_viewed` are numeric. There are **24,427 distinct titles**, with seasons counted separately.
+
+Missing metadata creates important limitations. Runtime is unavailable for **13,085 rows (21.1%)**, published views for **18,198 (29.4%)**, and release dates for **35,251 (57.0%)**. No values are missing from `hours_viewed`, `period`, or `title`. Observed viewing hours range from **100,000** to **964.1 million**. Their median of **1.8 million** is much lower than the mean of approximately **8.3 million**, showing a strongly right-skewed distribution: a small number of hits receive much more watch time than most titles.
+
+The coverage gap is especially large in **2023H1**, when **68.2% of runtimes, 100% of views, and 73.3% of release dates** are missing. Starting in 2023H2, only about **1.4%–1.7% of runtimes** are missing, and published views are available for all rows, but release dates remain absent from about half of the entries. The random sample illustrates this problem: titles such as *Soorma* and *Brokeback Mountain* have reported viewing hours but no runtime, views, or release date. Consequently, comparisons of content length, viewer counts, and release-age effects—especially involving 2023H1—require caution.
+
+
+# Task 5: Six short questions
+
+I used `dplyr` functions to answer six questions about Netflix viewing data and determined the time period covered by the reports and calculated the number of distinct titles in the dataset. Also examined the total viewing hours for the *Bridgerton* universe and the five main seasons of *Stranger Things*, excluding related spin-offs and specials. Next, I calculated the percentage of viewing hours generated by the ten most-watched titles in the first half of 2026. Finally,examined global availability by calculating both the percentage of titles available worldwide and their share of total viewing hours.I used Quarto inline R code to display these calculated values directly in complete sentences, with the `scales` package helping format numbers and percentages.
+
+```{r}
+#| label: q5-calculations
+# Q1: date range covered by the reports
+q5_date_start <- min(NETFLIX_DATA$period_start)
+q5_date_end   <- max(NETFLIX_DATA$period_end)
+
+# Q2: distinct titles (seasons counted separately)
+q5_n_titles <- n_distinct(NETFLIX_DATA$title)
+
+# Q3: Bridgerton universe (includes "Queen Charlotte: A Bridgerton Story")
+q5_bridgerton <- NETFLIX_DATA |>
+  filter(str_detect(title, regex("Bridgerton", ignore_case = TRUE))) |>
+  pull(hours_viewed) |>
+  sum()
+
+# Q4: count exactly the five main seasons, excluding related specials.
+main_stranger_titles <- c("Stranger Things", "Stranger Things 2",
+                         "Stranger Things 3", "Stranger Things 4",
+                         "Stranger Things 5")
+stranger_things <- NETFLIX_DATA |>
+  filter(title %in% main_stranger_titles)
+q5_stranger <- sum(stranger_things$hours_viewed, na.rm = TRUE)
+
+# Q5: top-10 share of watch time in 2026H1
+latest <- title_period |> filter(period == "2026H1")
+q5_top10_pct <- latest |>
+  slice_max(hours_viewed, n = 10, with_ties = FALSE) |>
+  pull(hours_viewed) |>
+  sum() / sum(latest$hours_viewed)
+
+# Q6: global availability. By title: each title's most recent status.
+title_status <- title_period |>
+  filter(!is.na(available_globally)) |>
+  arrange(desc(period)) |>
+  distinct(title, .keep_all = TRUE)
+q5_global_title_all <- mean(title_status$available_globally)
+q5_global_hours_all <- title_period |>
+  filter(!is.na(available_globally)) |>
+  summarise(share = sum(hours_viewed[available_globally]) / sum(hours_viewed)) |>
+  pull(share)
+q5_global_title_2026 <- mean(latest$available_globally, na.rm = TRUE)
+q5_global_hours_2026 <- latest |>
+  filter(!is.na(available_globally)) |>
+  summarise(share = sum(hours_viewed[available_globally]) / sum(hours_viewed)) |>
+  pull(share)
+```
+
+```{r}
+#| label: q5-stranger-check
+# Verify the filter keeps exactly the five main seasons.
+stranger_things |>
+  summarise(hours_viewed = sum(hours_viewed), .by = title) |>
+  arrange(title) |>
+  gt() |>
+  opt_row_striping() |>
+  tab_options(table.font.size = gt::px(13), data_row.padding = gt::px(5)) |>
+  tab_header(title = "Titles counted as main Stranger Things seasons") |>
+  cols_label(title = "Title", hours_viewed = "Hours viewed (all periods)") |>
+  fmt_number(columns = hours_viewed, decimals = 0)
+```
+
+## Q1. What date range is covered by this data set?
+
+The dataset covers the period from **`r format(q5_date_start, "%B %d, %Y")`** to **`r format(q5_date_end, "%B %d, %Y")`**, comprising seven consecutive six-month reports.
+
+
+## Q2. How many different shows and movies are covered in this data set?
+
+The dataset contains **`r scales::number(q5_n_titles, accuracy = 1, big.mark = ",")` different titles**, counting separate seasons of the same television show as distinct entries.
+
+## Q3. How many total hours have been spent watching shows from the Bridgerton universe?
+
+Titles belonging to the *Bridgerton* universe accumulated **`r scales::number(q5_bridgerton, accuracy = 1, big.mark = ",")` viewing hours** across the seven reporting periods.
+
+## Q4. How many total hours have been spent watching the five seasons of Stranger Things?
+
+For this question, only the five main seasons are included, excluding *Beyond Stranger Things*, *Tales from '85*, and *Stranger Things: Fireplace*.
+
+The five main seasons of *Stranger Things* generated **`r scales::number(q5_stranger, accuracy = 1, big.mark = ",")` viewing hours** across all reporting periods, excluding spin-offs and related specials.
+
+## Q5. What percentage of total watch time was spent on the Top 10 titles of 2026H1?
+
+The ten most-watched titles in 2026H1 accounted for **`r scales::percent(q5_top10_pct, accuracy = 0.1)` of total viewing hours** during that reporting period.
+
+## Q6. What fraction of Netflix's catalog is globally available? (Answer both by title and weighted by hours viewed.)
+
+Across all reporting periods, **`r scales::percent(q5_global_title_all, accuracy = 0.1)` of unique titles** were globally available, based on each title's most recent recorded availability status. These globally available entries accounted for **`r scales::percent(q5_global_hours_all, accuracy = 0.1)` of total viewing hours**.
+
+In 2026H1 specifically, **`r scales::percent(q5_global_title_2026, accuracy = 0.1)` of titles** were globally available, representing **`r scales::percent(q5_global_hours_2026, accuracy = 0.1)` of total viewing hours**.
+
+
+
+# Task 6: Five formatted tables
+
+
+## 6.1 What was the top title (by total hours viewed) in each period and what fraction of total viewership did it capture?
+
+
+**Method.** For each six-month period, I calculate each title's share of total reported viewing hours (`hours_viewed / sum(hours_viewed)`), select the highest-ranked title with `slice_max()`, and present both hours and percentages in a `gt` table.
+
+```{r}
+#| label: q6-top-titles
+title_period |>
+  mutate(share = hours_viewed / sum(hours_viewed), .by = period) |>
+  slice_max(hours_viewed, n = 1, with_ties = FALSE, by = period) |>
+  arrange(period) |>
+  select(period, title, hours_viewed, share) |>
+  gt() |>
+  opt_row_striping() |>
+  tab_options(table.font.size = gt::px(13), data_row.padding = gt::px(5)) |>
+  tab_header(
+    title = "Most-watched title in each six-month period",
+    subtitle = "Ranked by total hours viewed"
+  ) |>
+  cols_label(period = "Period", title = "Title",
+             hours_viewed = "Hours viewed", share = "Share of period") |>
+  fmt_number(columns = hours_viewed, suffixing = TRUE, decimals = 1) |>
+  fmt_percent(columns = share, decimals = 2) |>
+  tab_source_note("Source: Netflix What We Watched reports, 2023H1–2026H1")
+```
+
+The leading title changes across reporting periods. *The Night Agent: Season 1* topped 2023H1 with **812.1 million hours (0.87%)**, followed by *King the Land: Limited Series* in 2023H2 with **630.2 million (0.97%)**. *Bridgerton: Season 3* led 2024H1 with **733.8 million (1.08%)**. *Squid Game: Season 2* was first in both 2024H2 and 2025H1, with **619.9 million (0.91%)** and **840.3 million (1.18%)**, respectively. *Wednesday: Season 2* led 2025H2 with **964.1 million (1.35%)**, and *Bridgerton: Season 4* led 2026H1 with **889.8 million (1.20%)**.
+
+Even a number-one title contributes only **0.87%–1.35%** of the total hours in its period. This means viewing is spread over many programs despite the prominence of big releases. The repeat appearances of *Bridgerton* and *Squid Game* also show the potential of recognizable franchises to sustain attention across multiple reporting periods.
+
+
+```{r}
+#| label: viz-period-viewing
+#| fig-width: 8.5
+#| fig-height: 4.8
+#| fig-cap: "Total reported hours by half-year. The first period has different reporting coverage and is not a clean baseline for trends."
+period_viewing <- title_period |>
+  summarise(total_hours_billions = sum(hours_viewed) / 1e9, .by = period) |>
+  arrange(period)
+
+ggplot(period_viewing, aes(period, total_hours_billions, group = 1)) +
+  geom_col(fill = plot_blue, alpha = .23, width = .62) +
+  geom_line(colour = plot_blue, linewidth = 1.2) +
+  geom_point(colour = plot_coral, size = 3) +
+  geom_text(aes(label = paste0(round(total_hours_billions, 1), "B")),
+            vjust = -1.0, size = 3.3, colour = "#26394a") +
+  scale_y_continuous(limits = c(0, max(period_viewing$total_hours_billions) * 1.17),
+                     labels = scales::label_number(accuracy = 1)) +
+  labs(title = "Reported watch time increases after 2023H2",
+       subtitle = "Total hours viewed, by six-month reporting period",
+       x = "Report", y = "Hours viewed (billions)",
+       caption = "Source: Netflix What We Watched reports; 2023H1 is not directly comparable") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(face = "bold"), panel.grid.minor = element_blank())
+```
+
+
+## 6.2 How has Netflix’s catalog changed in size over the periods for which we have data? You should consider both the number of titles and the total runtime of content
+
+**Method.** I count distinct cleaned titles for each period and add up their runtimes (converting minutes to hours). We also report how many runtimes remain missing. This describes titles appearing in Netflix's viewing reports, not every title available for streaming.
+
+```{r}
+#| label: q6-catalog
+title_period |>
+  summarise(
+    titles                 = n(),
+    catalog_hours          = sum(runtime_minutes, na.rm = TRUE) / 60,
+    titles_without_runtime = sum(is.na(runtime_minutes)),
+    .by = period
+  ) |>
+  arrange(period) |>
+  mutate(titles_vs_first = titles / first(titles) - 1) |>
+  gt() |>
+  opt_row_striping() |>
+  tab_options(table.font.size = gt::px(13), data_row.padding = gt::px(5)) |>
+  tab_header(
+    title = "Netflix catalog size by reporting period",
+    subtitle = "Titles above Netflix's reporting threshold; runtime is a lower bound"
+  ) |>
+  cols_label(
+    period = "Period", titles = "Titles",
+    catalog_hours = "Total runtime (hours)",
+    titles_without_runtime = "Titles missing runtime",
+    titles_vs_first = "Titles vs. 2023H1"
+  ) |>
+  fmt_number(columns = c(titles, catalog_hours, titles_without_runtime),
+             decimals = 0) |>
+  fmt_percent(columns = titles_vs_first, decimals = 1) |>
+  tab_source_note(paste(
+    "Runtimes missing from a report are filled from the same title in other",
+    "reports, so early-period runtime totals are partial and not fully comparable."
+  ))
+```
+
+The reported number of distinct titles dropped from **18,126 in 2023H1** to **6,574 in 2023H2**, a **63.7% decrease** in reported titles. This is not sufficient evidence of a catalog collapse because the earliest report has much poorer metadata coverage and the reports exclude low-viewership content. After 2023H2, the number of reported titles grew consistently to **8,163 in 2026H1**, an increase of approximately **24.2%**. Over the same comparable span, recorded total runtime grew from **50,001 to 62,568 hours** (approximately **25.1%**).
+
+However, Netflix omits titles below its **50,000-hour reporting threshold**. Moreover, **12,364 titles in 2023H1** still have no usable runtime even after attempting to borrow information from other periods. The runtime totals are lower bounds, so early-period totals should not be treated as a complete inventory of all content accessible through Netflix.
+
+## 6.3 Which titles have had the most consistently high viewership across all periods? These shows are likely to be ‘staples’ that viewers fall back on as ‘comfort food’, e.g., re-runs of Friends.
+
+**Method.** I restrict the analysis to titles appearing in all seven reports, calculate each title's mean and minimum viewing hours, and use its coefficient of variation (standard deviation divided by the mean) to describe consistency. I rank titles by the viewing hours in their weakest period.
+```{r}
+#| label: q6-staples
+title_period |>
+  summarise(
+    periods_present = n(),
+    mean_hours      = mean(hours_viewed),
+    minimum_hours   = min(hours_viewed),
+    cv              = sd(hours_viewed) / mean(hours_viewed),
+    .by = title
+  ) |>
+  filter(periods_present == n_distinct(title_period$period)) |>
+  slice_max(minimum_hours, n = 10, with_ties = FALSE) |>
+  select(-periods_present) |>
+  gt() |>
+  opt_row_striping() |>
+  tab_options(table.font.size = gt::px(13), data_row.padding = gt::px(5)) |>
+  tab_header(
+    title = "Netflix 'staples': consistently high viewership",
+    subtitle = "Titles in all seven reports, ranked by their weakest period"
+  ) |>
+  cols_label(title = "Title", mean_hours = "Mean hours",
+             minimum_hours = "Minimum hours",
+             cv = "Coeff. of variation") |>
+  fmt_number(columns = c(mean_hours, minimum_hours), suffixing = TRUE,
+             decimals = 1) |>
+  fmt_number(columns = cv, decimals = 2) |>
+  tab_source_note("Coefficient of variation = SD / mean; lower is steadier.")
+```
+
+I defined a consistently popular title as one appearing in **all seven reports**, and ranked these titles by the **minimum hours viewed in any period**. This emphasizes reliable performance, rather than a single unusually successful semester. The **coefficient of variation** (standard deviation divided by mean) provides a second check: a smaller coefficient indicates steadier viewing.
+
+*Pablo Escobar, el patron del mal: Season 1* averaged **136.2 million hours** and never fell below **105.5 million**, while *Chiquititas (2013)* averaged **120.0 million** with a minimum of **105.0 million**. *Stranger Things 4* had a higher mean of **207.4 million** but also a high coefficient of variation (**0.83**), indicating a less consistent pattern. *Breaking Bad: Season 2* and *Money Heist: Part 1* were steadier, with coefficients of **0.13** and **0.12** respectively. Established dramas, international series, and older family-oriented shows therefore form an important group of durable titles. Their continued viewing is consistent with rewatching and discovery by new subscribers, though aggregate hours cannot distinguish those two behaviors.
+
+## 6.4 Within each period, what fraction of time was spent on ‘shows’ vs movies?
+
+**Method.** Because Netflix does not provide a dependable show/movie classification in these files, we estimate one using words such as "Season" in titles and a runtime threshold of 240 minutes (four hours). I show live events and unclassified titles separately so that the percentages remain transparent. This is an approximate classification, not a verified genre label.
+
+```{r}
+#| label: q6-tv-movies
+# Heuristic, applied in order: live events; then a season/part/volume
+# marker or "Limited Series"/"Miniseries" in the title; then runtime of
+# 4+ hours means TV. A digit is required after "Season" so films like
+# "Open Season" stay movies.
+tv_pattern <- regex(
+  "Season\\s*\\d|Part\\s*\\d|Volume\\s*\\d|Limited Series|Miniseries",
+  ignore_case = TRUE
+)
+
+classified <- title_period |>
+  mutate(content_type = case_when(
+    live_event ~ "Live event",
+    str_detect(title, tv_pattern) ~ "TV show",
+    !is.na(runtime_minutes) & runtime_minutes >= 240 ~ "TV show",
+    !is.na(runtime_minutes) ~ "Movie",
+    .default = "Unclassified"
+  ))
+
+classified |>
+  summarise(hours = sum(hours_viewed), .by = c(period, content_type)) |>
+  mutate(share = hours / sum(hours), .by = period) |>
+  select(-hours) |>
+  pivot_wider(names_from = content_type, values_from = share,
+              values_fill = 0) |>
+  select(period, any_of(c("TV show", "Movie", "Live event", "Unclassified"))) |>
+  arrange(period) |>
+  gt() |>
+  opt_row_striping() |>
+  tab_options(table.font.size = gt::px(13), data_row.padding = gt::px(5)) |>
+  tab_header(
+    title = "Share of watch time by content type",
+    subtitle = "Approximate classification from titles and runtimes"
+  ) |>
+  cols_label(period = "Period") |>
+  fmt_percent(columns = -period, decimals = 1) |>
+  tab_source_note(
+    "Unclassified = no runtime published and no season marker in the title."
+  )
+```
+
+Because the reports do not contain a reliable movie-versus-series category, this table uses a heuristic: titles explicitly flagged as live events form their own category; names containing **Season, Part, Volume, Limited Series, or Miniseries** count as television; otherwise a runtime of **four hours or more** indicates a show, and a shorter known runtime indicates a movie. Titles with insufficient information are unclassified.
+
+Under that approximate rule, television shows represent **71.5%** of hours in 2023H1, versus **0.9%** for movies; however, **27.6%** of hours in that period are unclassified. In the later periods, television is estimated at **96.7%–98.5%** of hours, while movies remain near **1.0%–1.2%**. This should **not** be interpreted as an official Netflix genre split. Short docuseries could be incorrectly counted as movies, unusually long films could be counted as shows, and the high volume of missing runtimes in 2023H1 prevents classification of many titles. These apparent shares are highly sensitive to the proxy chosen.
+
+## 6.5 How does the performance of live events compare to pre-taped content? Does the average live event draw more viewership than an average piece of pre-taped content? How about a ‘top tier’ live event vs ‘top tier’ pre-taped content?
+
+**Method.** I compare mean and median implied views per title for live and pre-recorded entries. For a consistent definition of *top tier*, also compare the average implied views of the ten largest entries in each category and report the single highest-viewed entry. Implied views are not unique viewers.
+
+```{r}
+#| label: q6-live-events
+# Raw hours favour long content, so implied views (hours / runtime)
+# are the fairer per-title comparison.
+title_period |>
+  filter(!is.na(views_est)) |>
+  mutate(format = if_else(live_event, "Live event", "Pre-recorded")) |>
+  summarise(
+    titles           = n(),
+    mean_views       = mean(views_est),
+    median_views     = median(views_est),
+    top10_mean_views = mean(head(sort(views_est, decreasing = TRUE), 10)),
+    best_title       = title[which.max(views_est)],
+    best_views       = max(views_est),
+    .by = format
+  ) |>
+  gt() |>
+  opt_row_striping() |>
+  tab_options(table.font.size = gt::px(13), data_row.padding = gt::px(5)) |>
+  tab_header(
+    title = "Live events vs. pre-recorded titles",
+    subtitle = "Implied views per title, all periods with runtime data"
+  ) |>
+  cols_label(
+    format = "Format", titles = "Titles", mean_views = "Mean views",
+    median_views = "Median views", top10_mean_views = "Top-10 mean views",
+    best_title = "Top title", best_views = "Top title views"
+  ) |>
+  fmt_number(columns = c(mean_views, median_views, top10_mean_views,
+                         best_views), suffixing = TRUE, decimals = 1) |>
+  fmt_number(columns = titles, decimals = 0) |>
+  tab_source_note("Live events are flagged by an asterisk on runtime.")
+```
+
+I compared **implied views**, calculated as viewing hours divided by the title's duration in hours, instead of raw hours. This partly controls for the fact that longer content can accumulate more watch time. Across **310 live-event entries** and **49,001 pre-recorded entries** with the necessary information, live events had slightly greater **mean views (1.5 million versus 1.4 million)** and a higher **median (900,000 versus 400,000)**.
+
+At the top end, however, pre-recorded content was much stronger: the **ten leading pre-recorded entries averaged 107.5 million views**, compared with **11.3 million** for the ten leading live-event entries. The highest pre-recorded entry, *Adolescence: Limited Series*, reached **144.8 million views**, versus **48.9 million** for *Jake Paul vs. Mike Tyson*. Thus, an average live-event entry performs comparably to an average pre-recorded entry, but the largest scripted or pre-recorded hits substantially outperform the largest live events. The small number of live-event entries makes this comparison less robust, and implied views are not unique viewers.
+
+# Task 7: Corporate strategy memo
+
+```{r}
+#| label: memo-metrics
+periods <- sort(unique(title_period$period))
+first_p <- first(periods)
+last_p  <- last(periods)
+
+# Gini coefficient: G = 2 * sum(i * y_(i)) / (n * sum(y)) - (n + 1) / n,
+# with y sorted ascending.
+compute_gini <- function(x) {
+  x <- sort(x[is.finite(x) & x >= 0])
+  n <- length(x)
+  if (n == 0L || sum(x) == 0) return(NA_real_)
+  2 * sum(seq_len(n) * x) / (n * sum(x)) - (n + 1) / n
+}
+
+# Replicate the instructor's worked example (~55.5%).
+gini_example <- compute_gini(c(20, 200, 0, 50, 40))
+stopifnot(isTRUE(all.equal(gini_example, 0.5548387, tolerance = 1e-6)))
+
+trend <- title_period |>
+  summarise(
+    titles             = n(),
+    total_hours        = sum(hours_viewed),
+    top10_share        = sum(head(sort(hours_viewed, decreasing = TRUE), 10)) /
+                           sum(hours_viewed),
+    global_hours_share = sum(hours_viewed[available_globally %in% TRUE]) /
+                           sum(hours_viewed[!is.na(available_globally)]),
+    live_hours_share   = sum(hours_viewed[live_event]) / sum(hours_viewed),
+    views_coverage     = mean(!is.na(views_est)),
+    gini_hours         = compute_gini(hours_viewed),
+    gini_views         = compute_gini(views_est),
+    .by = period
+  ) |>
+  arrange(period) |>
+  # Implied views are only trustworthy where most titles have a runtime;
+  # blank the views-based Gini where coverage is weak.
+  mutate(gini_views = if_else(views_coverage >= 0.9, gini_views, NA_real_))
+
+# Baseline for views-based comparisons: first period with good coverage.
+gini_base <- trend |>
+  filter(!is.na(gini_views)) |>
+  slice_head(n = 1) |>
+  pull(period)
+
+at <- function(col, p) trend[[col]][trend$period == p]
+memo_top10_first      <- at("top10_share", first_p)
+memo_top10_last       <- at("top10_share", last_p)
+memo_global_first     <- at("global_hours_share", first_p)
+memo_global_last      <- at("global_hours_share", last_p)
+memo_live_last        <- at("live_hours_share", last_p)
+memo_gini_hours_first <- at("gini_hours", first_p)
+memo_gini_hours_last  <- at("gini_hours", last_p)
+memo_gini_views_base  <- at("gini_views", gini_base)
+memo_gini_views_last  <- at("gini_views", last_p)
+
+# Share of implied views captured by the top 1% of titles (handy for
+# explaining the Gini in plain terms).
+memo_top1pct_views_last <- latest |>
+  filter(!is.na(views_est)) |>
+  arrange(desc(views_est)) |>
+  summarise(share = sum(head(views_est, ceiling(n() * 0.01))) / sum(views_est)) |>
+  pull(share)
+
+# Release "burst": daily watch time for titles released inside 2026H1
+burst <- latest |>
+  filter(!is.na(release_date), release_date >= period_start) |>
+  mutate(
+    days_available = as.integer(period_end - release_date) + 1L,
+    hours_per_day  = hours_viewed / days_available
+  ) |>
+  filter(days_available >= 7) |>
+  slice_max(hours_per_day, n = 10, with_ties = FALSE)
+```
+
+```{r}
+#| label: memo-trend-table
+trend |>
+  select(period, titles, total_hours, top10_share, global_hours_share,
+         live_hours_share, views_coverage, gini_hours, gini_views) |>
+  gt() |>
+  opt_row_striping() |>
+  tab_options(table.font.size = gt::px(13), data_row.padding = gt::px(5)) |>
+  tab_header(
+    title = "Key viewing indicators by period",
+    subtitle = "Concentration of watch time across the Netflix catalog"
+  ) |>
+  cols_label(
+    period = "Period", titles = "Titles", total_hours = "Total hours",
+    top10_share = "Top-10 share", global_hours_share = "Global-title share",
+    live_hours_share = "Live share", views_coverage = "Runtime coverage",
+    gini_hours = "Gini (hours)", gini_views = "Gini (implied views)"
+  ) |>
+  tab_spanner(label = "Inequality", columns = starts_with("gini")) |>
+  fmt_number(columns = titles, decimals = 0) |>
+  fmt_number(columns = total_hours, suffixing = TRUE, decimals = 1) |>
+  fmt_percent(columns = c(ends_with("share"), views_coverage), decimals = 1) |>
+  fmt_number(columns = starts_with("gini"), decimals = 3) |>
+  sub_missing(missing_text = "—") |>
+  data_color(columns = starts_with("gini"), palette = c("#f1f4f6", "#8fb0c5"),
+             na_color = "white") |>
+  tab_source_note(paste(
+    "Gini: 0 = watch time spread evenly across titles; 1 = all in one title.",
+    "Implied-views Gini shown only where 90%+ of titles have a runtime."
+  )) |>
+  tab_source_note("Source: Netflix What We Watched reports.")
+```
+
+```{r}
+#| label: memo-burst-table
+burst |>
+  select(title, release_date, days_available, hours_viewed, hours_per_day) |>
+  gt() |>
+  opt_row_striping() |>
+  tab_options(table.font.size = gt::px(13), data_row.padding = gt::px(5)) |>
+  tab_header(title = "Fastest-starting 2026H1 releases",
+             subtitle = "Hours viewed per day available within the period") |>
+  cols_label(title = "Title", release_date = "Released",
+             days_available = "Days available", hours_viewed = "Hours viewed",
+             hours_per_day = "Hours per day") |>
+  fmt_date(columns = release_date, date_style = "yMMMd") |>
+  fmt_number(columns = c(hours_viewed, hours_per_day), suffixing = TRUE,
+             decimals = 1)
+```
+
+
+```{r}
+#| label: memo-burst-chart
+#| fig-width: 8.5
+#| fig-height: 5.4
+#| fig-cap: "Daily viewing rates help put newly released titles on a more comparable footing. Release dates are not available for every title."
+burst |>
+  mutate(title = forcats::fct_reorder(title, hours_per_day)) |>
+  ggplot(aes(x = hours_per_day / 1e6, y = title)) +
+  geom_col(fill = plot_teal, width = .76) +
+  geom_text(aes(label = sprintf("%.1fM", hours_per_day / 1e6)),
+            hjust = -.12, size = 3.2, colour = "#243341") +
+  scale_x_continuous(limits = c(0, max(burst$hours_per_day) / 1e6 * 1.2),
+                     labels = scales::label_number(accuracy = 1)) +
+  labs(title = "Fast-starting releases in 2026H1",
+       subtitle = "Hours viewed per day available within the six-month period",
+       x = "Hours per day (millions)", y = NULL,
+       caption = "Source: Netflix What We Watched reports; only titles with a recorded in-period release date and at least seven available days") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(face = "bold"), panel.grid.major.y = element_blank(),
+        panel.grid.minor = element_blank())
+```
+
+```{r}
+#| label: memo-lorenz-chart
+#| fig-width: 7
+#| fig-height: 6.5
+#| fig-cap: "Lorenz curves of implied views. The further a curve sags below the dashed line, the more viewing is concentrated in a few titles."
+# Extra credit visual: Lorenz curves with each period's Gini in the legend.
+lorenz_periods <- unique(c(gini_base, last_p))
+
+lorenz <- title_period |>
+  filter(period %in% lorenz_periods, !is.na(views_est)) |>
+  arrange(period, views_est) |>
+  mutate(
+    cum_titles = row_number() / n(),
+    cum_views  = cumsum(views_est) / sum(views_est),
+    .by = period
+  ) |>
+  # Anchor each curve at (0, 0)
+  bind_rows(tibble(period = lorenz_periods, cum_titles = 0, cum_views = 0)) |>
+  arrange(period, cum_titles) |>
+  left_join(trend |> select(period, gini_views), by = "period") |>
+  mutate(label = sprintf("%s (Gini = %.3f)", period, gini_views))
+
+ggplot(lorenz, aes(cum_titles, cum_views, colour = label)) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed",
+              colour = "grey60") +
+  geom_line(linewidth = 1.1) +
+  annotate("text", x = 0.55, y = 0.62, label = "Perfect equality",
+           angle = 45, colour = "grey50", size = 3.5) +
+  scale_x_continuous(labels = percent, expand = expansion(0)) +
+  scale_y_continuous(labels = percent, expand = expansion(0)) +
+  scale_colour_manual(values = c(plot_blue, plot_coral)) +
+  coord_equal() +
+  labs(
+    title = "Concentration of Netflix viewing",
+    subtitle = sprintf("Lorenz curves of implied views, %s vs. %s",
+                       gini_base, last_p),
+    x = "Cumulative share of titles (least to most watched)",
+    y = "Cumulative share of implied views",
+    colour = NULL,
+    caption = "Source: Netflix What We Watched reports. Titles under 50K hours are not reported."
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "top",
+        plot.title = element_text(face = "bold"),
+        panel.grid.minor = element_blank())
+```
+
+```{r}
+#| label: memo-gini-trend-chart
+#| fig-width: 8
+#| fig-height: 4.5
+# Second extra-credit visual: how concentration moves over time,
+# comparing raw hours with length-normalized implied views.
+trend |>
+  select(period, `Hours viewed` = gini_hours,
+         `Implied views` = gini_views) |>
+  pivot_longer(-period, names_to = "measure", values_to = "gini") |>
+  filter(!is.na(gini)) |>
+  ggplot(aes(period, gini, colour = measure, group = measure)) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 2.5) +
+  scale_colour_manual(values = c(plot_blue, plot_coral)) +
+  scale_y_continuous(labels = label_number(accuracy = 0.01)) +
+  labs(
+    title = "Viewing inequality by period",
+    subtitle = "Gini coefficient of watch time across titles",
+    x = NULL, y = "Gini coefficient", colour = NULL,
+    caption = "Implied-views Gini omitted where fewer than 90% of titles have a runtime."
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "top",
+        plot.title = element_text(face = "bold"),
+        panel.grid.minor = element_blank())
+```
+
+## Memorandum: Original Content Spending in 2027 and Beyond
+
+**To:** Netflix Executive Leadership  
+**From:** Content Strategy and Analytics  
+**Subject:** Recommendations for Original Content Investment
+
+### Executive Summary
+
+Netflix's seven *What We Watched* reports suggest that the company should balance major original productions with consistently popular series and internationally accessible content. Reported viewing increased from **64.9 billion hours in 2023H2** to **74.3 billion in 2026H1**, while the number of reported titles grew from **6,574 to 8,163**. These findings indicate increased engagement with reported content, although they do not necessarily reflect subscriber growth or profitability.
+
+### Blockbuster Hits and Consistent Favorites
+
+Popular franchises attract substantial audiences, but viewing is spread across many titles. The ten most-watched titles represented **`r percent(memo_top10_first, accuracy = 0.1)`** of total hours in 2023H1 and **`r percent(memo_top10_last, accuracy = 0.1)`** in 2026H1. The share peaked at **8.0% in 2025H2**. *Bridgerton: Season 4* generated **889.8 million hours** in 2026H1, demonstrating the value of established franchises.
+
+However, older series also provide consistent engagement. *Breaking Bad: Season 2* averaged **91.6 million hours** across seven periods and never fell below **78.5 million hours**. Titles such as *Money Heist* and *Suits* showed similar durability. Netflix should therefore invest in both new blockbuster productions and established series that continue attracting viewers over time.
+
+### Viewing Concentration and the Gini Coefficient
+
+The **Gini coefficient** measures how unevenly viewing is distributed across titles. A value closer to zero indicates more equal viewing, while a value closer to one indicates greater concentration.
+
+The hours-based Gini increased from **0.737 in 2023H2** to **0.755 in 2026H1**, suggesting a modest increase in concentration. We use 2023H2 as a more comparable baseline because the earlier report has substantially different data coverage.
+
+To account for differences in content length, we also examined implied views, calculated using viewing hours divided by runtime. The implied-views Gini increased from **`r number(memo_gini_views_base, accuracy = 0.001)`** in **`r gini_base`** to **`r number(memo_gini_views_last, accuracy = 0.001)`** in 2026H1. The Lorenz curves and Gini trend chart illustrate how viewing remains concentrated among relatively few titles. Netflix should monitor both major hits and the wider catalog when making investment decisions.
+
+### International Availability and Release Timing
+
+Globally available titles accounted for **`r percent(q5_global_title_2026, accuracy = 0.1)` of reported titles** in 2026H1 but generated **`r percent(q5_global_hours_2026, accuracy = 0.1)` of viewing hours**. This suggests that widely accessible content plays an important role in Netflix engagement. However, global availability does not necessarily indicate international production or profitability. Investment decisions should also consider regional audience preferences and licensing costs.
+
+Release timing can significantly affect viewing totals. *I Will Find You: Limited Series* accumulated **350.5 million viewing hours** during just **13 days** of availability in 2026H1, averaging approximately **27 million hours per day**. Netflix should therefore evaluate both total viewing hours and viewing rates adjusted for the number of days a title was available.
+
+### Live Events and Recommendations
+
+Live events represented only **`r percent(memo_live_last, accuracy = 0.1)`** of total viewing hours in 2026H1. Although average live-event performance was comparable to pre-recorded content, the ten leading pre-recorded entries averaged **107.5 million implied views**, compared with **11.3 million** for the top ten live events. This suggests that live programming should complement, rather than replace, successful scripted content.
+
+For 2027 and beyond, Netflix should prioritize five actions:
+
+1. Continue investing in successful franchises while developing new original content.
+2. Maintain consistently popular series that provide long-term engagement.
+3. Expand internationally appealing content based on regional demand and performance.
+4. Invest selectively in live events.
+5. Evaluate content using implied views, release-adjusted viewing rates, audience retention, and production costs.
+
+Overall, Netflix should pursue a balanced strategy that combines major releases with dependable catalog content while using viewing data and financial measures to guide future investments.
+
+
+# AI Usage Statement
+
+::: {.callout-note title="AI Usage Statement" collapse="true"}
+
+- ChatGPT: Created the original code template.
+- Claude (code review): Found errors in the code,
+- Claude (code writing): Helped revise the R code
+
+:::
+
+# References
+
+- [Netflix What We Watched reports](https://about.netflix.com/en/news/what-we-watched-the-first-half-of-2026)
+- [STA 9750 Mini-Project #01](https://michael-weylandt.com/STA9750/mini/mini01.html)
+
